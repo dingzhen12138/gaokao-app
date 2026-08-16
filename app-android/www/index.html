@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高考自学手账 · 2027 新疆</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#f5f6fa; --surface:#ffffff; --sidebar:#fbfbfe; --ink:#1b1f2a; --muted:#68707f;
+  --line:#e7e9f0; --accent:#4f46e5; --accent-soft:#eef1ff; --accent-deep:#4338ca;
+  --green:#16a34a; --green-soft:#e8f7ee; --amber:#b45309; --amber-soft:#fdf3e3;
+  --red:#dc2626; --red-soft:#fdecec; --teal:#0d9488; --teal-soft:#e6f7f5;
+  --pink:#db2777; --pink-soft:#fdeef5; --yellow:#f5d76e; --yellow-soft:#fef9e7;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:15px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:216px;flex:0 0 216px;background:var(--sidebar);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;padding:16px 10px}
+.logo{font-weight:800;font-size:16px;padding:2px 10px 14px}
+.logo .sub{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+#nav{display:flex;flex-direction:column;gap:3px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;color:var(--muted);cursor:pointer;font-size:14px;border:none;background:transparent;width:100%;text-align:left;white-space:nowrap;font-family:inherit}
+.nav-item:hover{background:var(--accent-soft);color:var(--accent)}
+.nav-item.active{background:var(--accent);color:#fff;font-weight:600}
+.nav-item .ic{font-size:16px;line-height:1}
+.side-foot{margin-top:auto;padding:12px 10px 2px;color:var(--muted);font-size:11px;line-height:1.5}
+.main{flex:1;min-width:0}
+/* 全铺满：去掉内容区居中与最大宽度 */
+.content{padding:20px 22px 60px}
+.view{display:none}
+.view.on{display:block}
+.grid{display:grid;gap:16px}
+.grid-home{grid-template-columns:repeat(12,1fr)}
+.col-12{grid-column:span 12}.col-6{grid-column:span 6}.col-4{grid-column:span 4}.col-3{grid-column:span 3}
+@media(max-width:1100px){.col-6{grid-column:span 12}.col-4{grid-column:span 6}.col-3{grid-column:span 6}}
+@media(max-width:640px){.col-4,.col-3{grid-column:span 12}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px}
+.card h2{font-size:18px;margin:0 0 4px}
+.card h3{font-size:15px;margin:16px 0 8px}
+.card .lead{color:var(--muted);font-size:13px;margin:0 0 14px}
+.muted{color:var(--muted);font-size:13px}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600}
+.badge.teal{background:var(--teal-soft);color:var(--teal)}
+.badge.indigo{background:var(--accent-soft);color:var(--accent)}
+.badge.amber{background:var(--amber-soft);color:var(--amber)}
+.badge.red{background:var(--red-soft);color:var(--red)}
+.badge.green{background:var(--green-soft);color:var(--green)}
+.badge.pink{background:var(--pink-soft);color:var(--pink)}
+.hero{background:linear-gradient(135deg,#4f46e5 0%,#6d28d9 55%,#7c3aed 100%);color:#fff;border:none;border-radius:18px;padding:24px 26px}
+.hero .kicker{font-size:12px;opacity:.9;letter-spacing:.5px}
+.hero .big{font-size:40px;font-weight:800;line-height:1.05;margin:6px 0 2px}
+.hero .sub{opacity:.92;font-size:13.5px}
+.hero .stats{display:flex;gap:34px;flex-wrap:wrap;margin-top:18px}
+.hero .stat .num{font-size:24px;font-weight:700}
+.hero .stat .lbl{font-size:12px;opacity:.85}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:#fafbfd;font-weight:600;color:#374151;white-space:nowrap}
+.tbl-wrap{overflow-x:auto}
+.weekgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.wk{background:#fff;border:1px solid var(--line);border-radius:9px;text-align:center;padding:8px 2px;font-size:12px;cursor:pointer}
+.wk .n{font-weight:700}
+.wk.s0{background:#eef1ff}.wk.s1{background:#e0f2fe}.wk.s2{background:#d1fae5}.wk.s3{background:#fdf3e3}.wk.s4{background:#fce7f3}.wk.s5{background:#fde68a}.wk.s6{background:#fdecec}
+.wk.cur{outline:3px solid var(--accent);font-weight:800}
+.wk.done{opacity:.5}
+.stage{display:flex;gap:12px;align-items:flex-start;border-left:4px solid var(--line);padding:11px 15px;background:#fff;border-radius:10px;margin-bottom:8px}
+.stage.cur{border-left-color:var(--accent);background:var(--accent-soft)}
+/* 手账风格 */
+.chk{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:7px;cursor:pointer}
+.chk input{width:18px;height:18px;cursor:pointer;accent-color:var(--accent)}
+.chk.done{background:var(--green-soft);color:var(--muted);text-decoration:line-through}
+.bar{height:8px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#7c3aed);border-radius:999px}
+.sticker{background:var(--yellow-soft);border:1px solid #f0e0a0;border-radius:10px;padding:10px 13px;font-size:13px;margin-bottom:8px}
+.sticker b{display:block;margin-bottom:2px}
+.sticker.pink{background:var(--pink-soft);border-color:#f3c4da}
+.sticker.blue{background:var(--accent-soft);border-color:#cfd4ff}
+.vid-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line)}
+.vid-item .vtitle{flex:1;min-width:0;color:var(--accent);text-decoration:none}
+.vid-item .vtitle:hover{text-decoration:underline}
+.vid-item.watched .vtitle{color:var(--muted)}
+.vid-item input{accent-color:var(--accent)}
+.series{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.series-head{padding:11px 15px;background:#fafbfd;font-weight:600}
+.btn{display:inline-block;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;font-size:14px;font-family:inherit;text-decoration:none}
+.btn.ghost{background:#fff;color:var(--accent)}
+.btn.sm{padding:5px 12px;font-size:13px}
+.btn.warn{background:#fff;color:var(--red);border-color:var(--red)}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%}
+input[type="checkbox"],input[type="radio"]{width:18px;height:18px;flex:0 0 auto;padding:0;border:0}
+select{width:auto}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:13px;margin:2px;cursor:pointer}
+.pill.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.aiout{background:#fafbfd;border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-height:60px;font-size:14px}
+.aiout ul{margin:6px 0;padding-left:20px}
+.aiout h3,.aiout h4{margin:12px 0 4px}
+.aiout p{margin:6px 0}
+.qcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px;background:#fff}
+.qhead{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.qtext{font-weight:600;margin-bottom:10px}
+.opt{display:block;padding:8px 12px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;cursor:pointer;font-size:14px}
+.opt:hover{background:#fafbff}
+.opt input{margin-right:8px}
+.qinput{width:100%}
+.qresult{margin-top:10px;font-size:14px}
+.qresult.ok{color:var(--green)}
+.qresult.bad{color:var(--red)}
+.qresult .explain{margin-top:4px;color:var(--muted)}
+.qsrc{color:var(--muted);font-size:12px}
+.error{background:var(--red-soft);color:var(--red);border-radius:9px;padding:9px 13px;font-size:13px;margin:8px 0}
+.spin{color:var(--muted);font-size:13px}
+.logline{display:flex;gap:8px;align-items:center;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.logline .d{color:var(--muted);white-space:nowrap}
+@media(max-width:900px){
+  .app{flex-direction:column}
+  .sidebar{width:100%;flex:none;height:auto;position:static;flex-direction:row;align-items:center;overflow-x:auto;padding:10px 12px;gap:6px}
+  .logo{padding:0 6px 0 0;white-space:nowrap}
+  .logo .sub{display:none}
+  #nav{flex-direction:row;overflow-x:auto}
+  .nav-item{width:auto}
+  .side-foot{display:none}
+  .content{padding:14px 12px 40px}
+  .hero .big{font-size:32px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">🎯 高考自学<span class="sub">2027 新疆 · 物化生</span></div>
+    <nav id="nav"></nav>
+    <div class="side-foot">数据保存在本机浏览器<br>政策信息以新疆教育考试院为准</div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <section id="view-home" class="view"></section>
+      <section id="view-subject" class="view"></section>
+      <section id="view-quiz" class="view"></section>
+      <section id="view-review" class="view"></section>
+      <section id="view-settings" class="view"></section>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============ Supabase 云端配置（部署时填写，见「部署手册.md」） ============ */
+var SUPABASE_URL = "https://auoixipbgeizigemkywt.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1b2l4aXBiZ2VpemlnZW1reXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4NjUzNTAsImV4cCI6MjEwMjQ0MTM1MH0.ir8qeprgD8Ri_gTmBMyNZcGedEtN5ZY-alyItOkKmzs";
+var supabase = null;
+var currentUser = { uid: "", name: "" };
+try { currentUser = { uid: localStorage.getItem("gk_uid")||"", name: localStorage.getItem("gk_name")||"" }; } catch(e){}
+var cloudReady = false;
+
+function cloudEnabled(){ return SUPABASE_URL.indexOf("YOUR_") !== 0 && !!window.supabase; }
+function genUid(){
+  if (window.crypto && crypto.randomUUID) { try { return crypto.randomUUID(); } catch(e){} }
+  return "u" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+}
+async function initFlow(){
+  if (!cloudEnabled()) { switchView("home"); return; }
+  try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e){ switchView("home"); return; }
+  if (!currentUser.uid) {
+    var name = prompt("欢迎使用高考自学手账！请先登记你的昵称（用于记录你的学习数据）：","");
+    if (!name || !name.trim()) { switchView("home"); return; }
+    currentUser = { uid: genUid(), name: name.trim() };
+    localStorage.setItem("gk_uid", currentUser.uid);
+    localStorage.setItem("gk_name", currentUser.name);
+    try { await supabase.from("users").insert({id: currentUser.uid, name: currentUser.name}); } catch(e){}
+  }
+  cloudReady = true;
+  await loadCloud();
+  switchView("home");
+}
+async function loadCloud(){
+  if (!cloudReady || !supabase) return;
+  try {
+    var chapters = {};
+    var {data: pg} = await supabase.from("progress").select("*").eq("user_id", currentUser.uid);
+    (pg||[]).forEach(function(r){ chapters[r.subject]=chapters[r.subject]||{}; chapters[r.subject][r.chapter]=r.count; });
+    state.chapters = chapters;
+
+    var log = state.log || {};
+    var since = fmt(new Date(Date.now() - 7*MS_DAY));
+    var {data: ck} = await supabase.from("checkins").select("*").eq("user_id", currentUser.uid).gte("date", since);
+    (ck||[]).forEach(function(c){
+      log[c.date] = log[c.date]||{};
+      var subjLog = log[c.date][c.subject] || (log[c.date][c.subject]={done:true, entries:{}});
+      subjLog.done = true;
+      subjLog.entries[c.type] = (subjLog.entries[c.type]||0) + (c.count||0);
+    });
+    state.log = log;
+
+    var reviews = {};
+    var {data: rv} = await supabase.from("reviews").select("*").eq("user_id", currentUser.uid);
+    (rv||[]).forEach(function(r){ reviews[r.week] = r.data||{}; });
+    state.reviews = reviews;
+    saveState();
+  } catch(e){ /* 云端失败则用本地缓存 */ }
+}
+function cloudCheckin(subject, chapter, type, step, chapterCount){
+  if (!cloudReady || !supabase) return;
+  try {
+    supabase.from("checkins").insert({user_id: currentUser.uid, name: currentUser.name, date: fmt(new Date()), subject: subject, chapter: chapter, type: type, count: step});
+    supabase.from("progress").upsert({user_id: currentUser.uid, subject: subject, chapter: chapter, count: chapterCount});
+  } catch(e){}
+}
+
+/* ============ 数据层（源自《2027新疆高考自学规划.md》） ============ */
+
+var START = new Date(2026,7,17);
+var END   = new Date(2027,5,6);
+var EXAM  = new Date(2027,5,7);
+
+var STAGES = [
+  {no:0, name:"诊断与复学", weeks:1, goal:"核验资格，测出真实起点，恢复作息", ratio:"看课20% / 做题40% / 复盘40%"},
+  {no:1, name:"基础重建", weeks:8, goal:"教材主干、初高衔接、基础题稳定", ratio:"看课40% / 做题45% / 复盘15%"},
+  {no:2, name:"一轮上半程", weeks:10, goal:"系统完成高频主干，基础过渡中档", ratio:"看课30% / 做题55% / 复盘15%"},
+  {no:3, name:"一轮下半程", weeks:9, goal:"完成六科一轮，首次全科整卷", ratio:"看课25% / 做题60% / 复盘15%"},
+  {no:4, name:"二轮专题", weeks:8, goal:"题型整合、限时训练、补弱", ratio:"看课15% / 做题70% / 复盘15%"},
+  {no:5, name:"三轮实战", weeks:4, goal:"全真模拟、时间分配、稳定输出", ratio:"看课10% / 做题75% / 复盘15%"},
+  {no:6, name:"考前收束", weeks:2, goal:"回归教材错题、保持手感与睡眠", ratio:"看课5% / 做题55% / 复盘40%"}
+];
+
+var WEEK_GROUPS = [
+  {from:1,to:1, main:"办理政策核验；六科各做一次分模块诊断；只恢复作息，不追课", check:"形成《报名/合格考清单》《六科薄弱章清单》《42周分数记录表》"},
+  {from:2,to:3, main:"数：初高衔接、集合、不等式；物：运动描述、匀变速；化：物质分类、物质的量；生：细胞与化合物；语：信息类阅读；英：音标/句子成分+核心词", check:"基础题正确率≥70%"},
+  {from:4,to:5, main:"数：函数概念、指数对数；物：相互作用、受力分析；化：离子反应、氧化还原；生：细胞结构、物质运输；语：文言实词句式；英：简单句、并列句、从句", check:"白纸画四科知识树；每科1次60—90分钟限时练"},
+  {from:6,to:7, main:"数：三角函数；物：牛顿定律；化：元素化合物；生：酶、ATP、呼吸与光合；语：古诗鉴赏；英：时态语态、非谓语", check:"数物化计算步骤完整率≥80%"},
+  {from:8,to:9, main:"数：向量、解三角形；物：曲线运动、圆周；化：元素周期律；生：细胞生命历程；语：文学类阅读；英：定从/名从/状从、词汇第一轮", check:"阶段测；教材基础题平均≥80%"},
+  {from:10,to:11, main:"数：数列；物：万有引力、功和能；化：化学反应与能量；生：遗传基本规律；语：作文审题立意；英：阅读事实与主旨", check:"首次半套计时训练；完成报名材料核查"},
+  {from:12,to:13, main:"数：立体几何；物：动量；化：化学平衡；生：伴性遗传、遗传计算；语：文言文综合；英：长难句、七选五", check:"数/物中档题正确率≥60%"},
+  {from:14,to:15, main:"数：直线与圆；物：静电场；化：水溶液平衡；生：变异、育种、进化；语：古诗文综合；英：完形", check:"错题48小时重做≥80%"},
+  {from:16,to:17, main:"数：圆锥曲线基础；物：恒定电流；化：电化学；生：内环境、神经调节；语：小说散文；英：语法填空", check:"6科模块测；正确率≥75%标「已过一轮」"},
+  {from:18,to:19, main:"数：圆锥曲线中档；物：磁场；化：无机综合/流程基础；生：体液、免疫；语：作文论证；英：应用文写作", check:"一轮上半程考试"},
+  {from:20,to:21, main:"数：导数基础；物：电磁感应；化：有机基础；生：植物生命活动调节；语：语言文字运用；英：读后续写基础", check:"完成一次语数英分科整卷"},
+  {from:22,to:23, main:"数：导数应用；物：交变电流、传感器；化：有机合成与推断；生：种群与群落；语：信息类/文言限时；英：阅读+续写", check:"语数英稳定时间分配草案"},
+  {from:24,to:25, main:"数：计数、概率；物：热学、振动、波、光；化：物质结构；生：生态系统；语：作文素材回扣教材；英：词汇第二轮", check:"物/化实验清单各1份"},
+  {from:26,to:28, main:"数：统计、全概率、回归并总串；物：近代物理+实验；化：实验、工艺流程；生：生物技术+实验；语英完成一轮", check:"六科一轮清零"},
+  {from:29,to:30, main:"二轮1：数函数/导数/三角；物力学综合；化反应原理；生遗传；语阅读；英阅读", check:"每周2次综合计时"},
+  {from:31,to:32, main:"二轮2：数数列/立几；物电场电路；化无机/周期；生调节；语古诗文；英完形七选五", check:"首次模拟「高考周」"},
+  {from:33,to:34, main:"二轮3：数解析几何；物磁场/电磁感应；化实验；生生态/实验；语作文；英写作", check:"只保留得分率最低3个专题补弱"},
+  {from:35,to:36, main:"二轮4：概率统计+跨模块；理科实验与信息题；语英全题型", check:"二轮结束测试：波动≤30分"},
+  {from:37,to:38, main:"三轮：每周2次全真组合模拟；其余按错因补洞", check:"建立最终答题顺序"},
+  {from:39,to:40, main:"三轮：每周2次模拟；回教材实验、图表、课本原句", check:"最近3次模拟中位数稳定"},
+  {from:41,to:41, main:"降量20%；错题代表题、公式、古诗文、词汇、实验清单", check:"最后一次完整模拟不晚于5月30日"},
+  {from:42,to:42, main:"每天4—6小时轻量训练；只做熟题、基础题、短时计时", check:"6月4日起停止新题"}
+];
+
+var DAILY_BLOCKS = [
+  {time:"07:30—08:10", name:"英语词汇30分钟 + 古诗文/语文积累10分钟"},
+  {time:"08:20—10:20", name:"数学主块120分钟"},
+  {time:"10:40—11:40", name:"语文或英语60分钟"},
+  {time:"14:00—15:30", name:"物理/化学/生物主块90分钟"},
+  {time:"15:50—17:10", name:"第二门理科80分钟"},
+  {time:"19:00—20:10", name:"第三门理科或语英强化70分钟"},
+  {time:"20:25—20:55", name:"当日闭环30分钟"}
+];
+
+var DAILY_TASKS = ["英语词汇+古诗文积累","数学主块120min","语文或英语60min","理科主块90min","第二门理科80min","第三门理科/语英70min","当日闭环30min"];
+
+var WEEKDAY_PLAN = {
+  1:{main1:"物理", main2:"化学", night:"语文·信息类阅读", output:"数学错题2道、物理模型图1页、阅读题1组"},
+  2:{main1:"化学", main2:"生物", night:"英语·阅读/长难句", output:"方程式清单、概念辨析10条、阅读2篇"},
+  3:{main1:"物理", main2:"生物", night:"语文·古诗文/文言文", output:"物理计算题2—4道、文言实词/句式卡片"},
+  4:{main1:"化学", main2:"物理", night:"英语·完形/七选五/语法填空", output:"化学大题1组、英语计时训练1组"},
+  5:{main1:"生物", main2:"物理", night:"语文·作文", output:"生物材料题1组、物理中档题2—4道、作文提纲2个"},
+  6:{main1:"周测或整卷", main2:"订正与补洞", night:"下周规划+轻量背诵", output:"计时卷、错因统计表、下周任务表"},
+  0:{main1:"休息", main2:"可散步、阅读", night:"最多60分钟机动", output:"不安排新课"}
+};
+
+var SUBJECTS = [
+  {key:"chinese", name:"语文", icon:"📖", time:"每日积累 · 每周3个大块", order:"信息类 → 文言文 → 古诗 → 文学类 → 语言文字运用 → 作文", chapters:["信息类阅读","文言文","古诗鉴赏","文学类阅读","语言文字运用","作文"], standard:"所有题型有固定审题清单；整卷限时完成并留5—10分钟检查"},
+  {key:"math", name:"数学", icon:"➗", time:"每天120分钟", order:"初高衔接 → 集合/逻辑/不等式 → 函数 → 三角与向量 → 数列 → 立体几何 → 解析几何 → 导数 → 计数/概率/统计", chapters:["初高衔接","集合/逻辑/不等式","函数","三角与向量","数列","立体几何","解析几何","导数","计数/概率/统计"], standard:"基础题≥85%；常规中档≥65%；书写完整"},
+  {key:"english", name:"英语", icon:"🔤", time:"每日词汇 · 每周3个大块", order:"核心词汇/语音 → 句子成分 → 时态语态/非谓语/从句 → 阅读 → 完形/七选五/语法填空 → 应用文/读后续写 → 听力", chapters:["核心词汇/语音","句子成分","时态语态/非谓语/从句","阅读","完形/七选五/语法填空","应用文/读后续写","听力"], standard:"核心词真题语境识别；阅读限时；写作限时完成"},
+  {key:"physics", name:"物理", icon:"⚛️", time:"每周4个大块", order:"运动与受力 → 牛顿定律 → 曲线运动/万有引力 → 功能/动量 → 电场电路 → 磁场/电磁感应 → 振动波光热 → 近代物理 → 实验", chapters:["运动与受力","牛顿定律","曲线运动/万有引力","功能/动量","电场电路","磁场/电磁感应","振动波光热","近代物理","实验"], standard:"基础模型3分钟识别；计算单位方向不漏；90分钟分科卷"},
+  {key:"chemistry", name:"化学", icon:"🧪", time:"每周3个固定大块", order:"分类/物质的量 → 离子与氧化还原 → 元素化合物/周期律 → 反应热与速率平衡 → 水溶液 → 电化学 → 有机/结构 → 实验与工艺流程", chapters:["分类/物质的量","离子与氧化还原","元素化合物/周期律","反应热与速率平衡","水溶液","电化学","有机/结构","实验与工艺流程"], standard:"基础概念选择≥85%；计算完整；实验用教材语言"},
+  {key:"biology", name:"生物", icon:"🧬", time:"每周3个大块", order:"细胞与分子 → 代谢 → 生命历程 → 遗传/变异/进化 → 稳态与调节 → 种群群落生态 → 生物技术 → 实验", chapters:["细胞与分子","代谢","生命历程","遗传/变异/进化","稳态与调节","种群群落生态","生物技术","实验"], standard:"基础选择≥85%；遗传写亲本配子概率路径；材料题「依据材料+术语」"}
+];
+
+/* 打卡项（每科 icon 化：点一下累加 step 数量） */
+var CHECKIN_TYPES = {
+  math:[ {key:"prob", icon:"📝", name:"做题", unit:"道", step:5}, {key:"video", icon:"📐", name:"看课", unit:"节", step:1}, {key:"fix", icon:"📕", name:"订正错题", unit:"道", step:3} ],
+  chinese:[ {key:"wenyan", icon:"📖", name:"背文言文", unit:"篇", step:1}, {key:"gushi", icon:"📜", name:"背古诗", unit:"首", step:1}, {key:"zuowen", icon:"✍️", name:"写作文", unit:"篇", step:1}, {key:"yuedu", icon:"📰", name:"阅读理解", unit:"篇", step:1} ],
+  english:[ {key:"word", icon:"🔤", name:"背单词", unit:"个", step:20}, {key:"read", icon:"📖", name:"阅读", unit:"篇", step:1}, {key:"write", icon:"✍️", name:"写作", unit:"篇", step:1}, {key:"listen", icon:"🎧", name:"听力", unit:"分钟", step:15} ],
+  physics:[ {key:"prob", icon:"📝", name:"做题", unit:"道", step:5}, {key:"exp", icon:"🔬", name:"实验", unit:"个", step:1}, {key:"video", icon:"📐", name:"看课", unit:"节", step:1} ],
+  chemistry:[ {key:"prob", icon:"📝", name:"做题", unit:"道", step:5}, {key:"exp", icon:"⚗️", name:"实验", unit:"个", step:1}, {key:"video", icon:"📐", name:"看课", unit:"节", step:1} ],
+  biology:[ {key:"prob", icon:"📝", name:"做题", unit:"道", step:5}, {key:"exp", icon:"🔬", name:"实验", unit:"个", step:1}, {key:"concept", icon:"📖", name:"背概念", unit:"条", step:10} ]
+};
+
+var RESOURCES = {
+  chinese:[
+    {title:"学过石油的语文老师", videos:[{title:"体系课程入口", bvid:"BV1ZT4113744"},{title:"文学类阅读合集", bvid:"BV12N4y1v74F"}]},
+    {title:"国家中小学智慧教育平台（教材补洞）", link:"https://basic.smartedu.cn/", videos:[]}
+  ],
+  math:[
+    {title:"一数", videos:[{title:"基础+中档课程", bvid:"BV13t411j7AQ"},{title:"常规版", bvid:"BV1VD4y1D7UB"}]}
+  ],
+  english:[
+    {title:"一英儿（一系列）", videos:[{title:"全科指南入口", bvid:"BV1L142187QT"}]},
+    {title:"FREE高考英语", videos:[{title:"一轮题型课程", bvid:"BV1Yr421M76r"}]}
+  ],
+  physics:[
+    {title:"一物儿", videos:[{title:"必修一基础与解法全集", bvid:"BV1f4xtzZE8F"}]}
+  ],
+  chemistry:[
+    {title:"一化儿", videos:[{title:"一轮+二轮总复习", bvid:"BV1aComYMEms"}]}
+  ],
+  biology:[
+    {title:"一生儿", videos:[{title:"高考知识与解法全集", bvid:"BV12Bf6YLEXP"}]}
+  ]
+};
+
+var WEEKLY_METRICS = [
+  {key:"days",  name:"完成学习天数", pass:"6天", note:"生病时允许5天"},
+  {key:"hours", name:"实际净学习时间", pass:"42—49小时", note:"不以坐桌前时长计"},
+  {key:"video", name:"视频占总学习时间", pass:"基础≤40% / 一轮≤30% / 二轮≤15%", note:""},
+  {key:"redo",  name:"48h错题重做正确率", pass:"≥80%", note:""},
+  {key:"basic", name:"本周基础题正确率", pass:"≥80%", note:"≥80%才进中档"},
+  {key:"sleep", name:"睡眠达标天数", pass:"≥5天", note:""}
+];
+var METRIC_SHORT = ["天数","净时长","视频占比","48h重做","基础题","睡眠"];
+
+var PROVIDERS = {
+  "DeepSeek":{baseUrl:"https://api.deepseek.com", model:"deepseek-chat"},
+  "豆包(火山)":{baseUrl:"https://ark.cn-beijing.volces.com/api/v3", model:"doubao-1-5-pro-32k-250115"},
+  "通义千问":{baseUrl:"https://dashscope.aliyuncs.com/compatible-mode/v1", model:"qwen-plus"},
+  "自定义":{baseUrl:"", model:""}
+};
+
+/* 本地真题题库（预置；来源为历年真题高频/改编，答案已核对；可导入扩充） */
+var QUESTION_BANK = {
+  chinese:[
+    {point:"古诗鉴赏", type:"fill", q:"补写名句：落霞与孤鹜齐飞，______。（王勃《滕王阁序》）", answer:"秋水共长天一色", explain:"千古名句，高考默写高频。", source:"高考默写真题"},
+    {point:"古诗鉴赏", type:"choice", q:"“春蚕到死丝方尽，蜡炬成灰泪始干”出自下列哪位诗人？", options:["李白","杜甫","李商隐","杜牧"], answer:"李商隐", explain:"出自李商隐《无题》，“丝”谐音“思”。", source:"文学常识真题"},
+    {point:"古诗鉴赏", type:"fill", q:"补写名句：“大江东去，浪淘尽，______。”（苏轼《念奴娇·赤壁怀古》）", answer:"千古风流人物", explain:"苏轼《念奴娇·赤壁怀古》开篇。", source:"高考默写真题"},
+    {point:"语言文字运用", type:"choice", q:"下列没有语病的一句是？", options:["通过这次活动，使我深受教育。","他大约用了十分钟左右写完。","能否刻苦学习是取得好成绩的关键。","我们要养成认真审题的好习惯。"], answer:"我们要养成认真审题的好习惯。", explain:"A 缺主语；B 重复；C 两面对一面。", source:"语用真题改编"}
+  ],
+  math:[
+    {point:"集合/逻辑/不等式", type:"fill", q:"集合 A = {x | x² - 3x + 2 = 0} 中元素的个数为____。", answer:"2", explain:"x²-3x+2=(x-1)(x-2)=0，x=1 或 2。", source:"集合真题改编"},
+    {point:"集合/逻辑/不等式", type:"fill", q:"不等式 x² - 5x + 6 < 0 的解集为____。", answer:"(2,3)", explain:"(x-2)(x-3)<0，得 2<x<3。", source:"不等式真题改编"},
+    {point:"函数", type:"choice", q:"函数 f(x) = x² - 2x - 3 的最小值为____。", options:["-4","-3","-2","0"], answer:"-4", explain:"f(x)=(x-1)²-4，顶点 (1,-4)。", source:"函数真题改编"},
+    {point:"数列", type:"fill", q:"等差数列 {aₙ} 中，a₁=1，公差 d=2，则 a₅ = ____。", answer:"9", explain:"a₅=a₁+4d=1+8=9。", source:"数列真题改编"},
+    {point:"三角与向量", type:"fill", q:"sin 30° = ____。", answer:"1/2", explain:"特殊角三角函数值。", source:"三角函数基础"}
+  ],
+  english:[
+    {point:"时态语态/非谓语/从句", type:"choice", q:"He ___ to school every day.", options:["go","goes","going","gone"], answer:"goes", explain:"主语三单，一般现在时用 goes。", source:"时态真题改编"},
+    {point:"时态语态/非谓语/从句", type:"fill", q:"I enjoy ___ (read) books in my free time.", answer:"reading", explain:"enjoy 后接动名词 doing。", source:"非谓语真题改编"},
+    {point:"时态语态/非谓语/从句", type:"choice", q:"Look! It ___ outside now.", options:["rain","rains","is raining","rained"], answer:"is raining", explain:"Look! 提示现在进行时。", source:"时态真题改编"},
+    {point:"时态语态/非谓语/从句", type:"fill", q:"The homework ___ (do) by students every day.", answer:"is done", explain:"一般现在时被动语态 is done。", source:"语态真题改编"}
+  ],
+  physics:[
+    {point:"运动与受力", type:"fill", q:"物体做匀加速直线运动，初速度 2 m/s，加速度 3 m/s²，则 2 s 末速度为____ m/s。", answer:"8", explain:"v=v₀+at=2+3×2=8。", source:"匀变速真题改编"},
+    {point:"运动与受力", type:"fill", q:"物体从静止自由下落（g=10 m/s²），第 1 s 内下落高度为____ m。", answer:"5", explain:"h=½gt²=½×10×1²=5。", source:"自由落体真题改编"},
+    {point:"牛顿定律", type:"choice", q:"关于惯性，下列说法正确的是？", options:["物体速度越大惯性越大","物体受力越大惯性越大","质量是惯性大小的量度","只有运动物体才有惯性"], answer:"质量是惯性大小的量度", explain:"惯性只与质量有关。", source:"牛顿定律真题改编"},
+    {point:"功能/动量", type:"fill", q:"质量 2 kg 的物体以 3 m/s 运动，其动能为____ J。", answer:"9", explain:"Eₖ=½mv²=½×2×3²=9。", source:"动能真题改编"},
+    {point:"电场电路", type:"fill", q:"电阻 R=2 Ω 两端电压 U=6 V，则通过电流 I = ____ A。", answer:"3", explain:"I=U/R=6/2=3。", source:"欧姆定律基础"}
+  ],
+  chemistry:[
+    {point:"分类/物质的量", type:"fill", q:"标准状况下，22.4 L O₂ 的物质的量为____ mol。", answer:"1", explain:"标况下 1 mol 气体约 22.4 L。", source:"物质的量真题改编"},
+    {point:"分类/物质的量", type:"fill", q:"1 mol H₂O 中含有的水分子数约为____（用数值或 NA 表示）。", answer:"6.02×10²³", explain:"1 mol 粒子约 6.02×10²³ 个。", source:"物质的量真题改编"},
+    {point:"离子与氧化还原", type:"choice", q:"在氧化还原反应中，某元素得电子，则该元素____。", options:["被氧化","被还原","化合价升高","作还原剂"], answer:"被还原", explain:"得电子→被还原→化合价降低→作氧化剂。", source:"氧化还原真题改编"},
+    {point:"元素化合物/周期律", type:"fill", q:"钠与水反应的生成物是 NaOH 和 ____。", answer:"H₂", explain:"2Na+2H₂O=2NaOH+H₂↑。", source:"元素化合物基础"}
+  ],
+  biology:[
+    {point:"细胞与分子", type:"choice", q:"细胞内生命活动所需的主要能源物质是？", options:["脂肪","蛋白质","葡萄糖","核酸"], answer:"葡萄糖", explain:"糖类是主要能源物质。", source:"细胞分子真题改编"},
+    {point:"细胞与分子", type:"fill", q:"细胞膜的主要成分是____和蛋白质。", answer:"磷脂", explain:"细胞膜由磷脂双分子层和蛋白质等组成。", source:"细胞结构基础"},
+    {point:"代谢", type:"fill", q:"光合作用光反应阶段产生 ATP、____ 和 O₂。", answer:"[H]（NADPH）", explain:"水的光解产生 O₂、[H] 和 ATP。", source:"光合作用真题改编"},
+    {point:"遗传/变异/进化", type:"choice", q:"杂合子 Aa 自交，后代表现型比例（完全显性）为____。", options:["1:1","2:1","3:1","1:2:1"], answer:"3:1", explain:"Aa×Aa→AA:Aa:aa=1:2:1，显:隐=3:1。", source:"遗传定律基础"}
+  ]
+};
+
+/* ============ 状态与存储 ============ */
+var LS_KEY = "gk_state_v2";
+var storageOK = true;
+function memStore(){ return {settings:{baseUrl:"https://api.deepseek.com",model:"deepseek-chat",apiKey:"",provider:"DeepSeek"}, daily:{}, reviews:{}, watched:{}, custom:{}, flagged:[], chapters:{}, log:{}, importedBank:{}}; }
+function loadState(){
+  try{
+    var raw = localStorage.getItem(LS_KEY);
+    if(!raw) return memStore();
+    var s = JSON.parse(raw);
+    return {
+      settings: Object.assign(memStore().settings, s.settings||{}),
+      daily: s.daily||{},
+      reviews: s.reviews||{},
+      watched: s.watched||{},
+      custom: s.custom||{},
+      flagged: s.flagged||[],
+      chapters: s.chapters||{},
+      log: s.log||{},
+      importedBank: s.importedBank||{}
+    };
+  }catch(e){ storageOK=false; return memStore(); }
+}
+var state = loadState();
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); storageOK=true; }catch(e){ storageOK=false; } }
+
+/* ============ 日期与工具 ============ */
+var MS_DAY = 86400000;
+function pad(n){ return String(n).padStart(2,"0"); }
+function fmt(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function weekOf(d){ var diff = Math.floor((d - START)/MS_DAY); if(diff<0) return 0; var w = Math.floor(diff/7)+1; if(w>42) return 43; return w; }
+function stageOfWeek(w){ if(w<1||w>42) return null; if(w===1) return 0; if(w<=9) return 1; if(w<=19) return 2; if(w<=28) return 3; if(w<=36) return 4; if(w<=40) return 5; return 6; }
+function weekRange(w){ var s=new Date(START.getTime()+(w-1)*7*MS_DAY); var e=new Date(s.getTime()+6*MS_DAY); return {start:s,end:e}; }
+function stageRange(si){ var sw=1; for(var i=0;i<si;i++) sw+=STAGES[i].weeks; var ew=sw+STAGES[si].weeks-1; return {start:weekRange(sw).start,end:weekRange(ew).end,startWeek:sw,endWeek:ew}; }
+function findGroup(w){ for(var i=0;i<WEEK_GROUPS.length;i++){ var g=WEEK_GROUPS[i]; if(w>=g.from&&w<=g.to) return g; } return null; }
+function daysToExam(d){ return Math.floor((EXAM-d)/MS_DAY); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function mdToHtml(s){
+  s=s||""; s=String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  s=s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  var lines=s.split("\n"), html="", inList=false;
+  for(var i=0;i<lines.length;i++){
+    var t=lines[i].trim();
+    if(/^###\s+/.test(t)){ if(inList){html+="</ul>";inList=false;} html+="<h4>"+t.replace(/^###\s+/,"")+"</h4>"; }
+    else if(/^##\s+/.test(t)){ if(inList){html+="</ul>";inList=false;} html+="<h3>"+t.replace(/^##\s+/,"")+"</h3>"; }
+    else if(/^#\s+/.test(t)){ if(inList){html+="</ul>";inList=false;} html+="<h3>"+t.replace(/^#\s+/,"")+"</h3>"; }
+    else if(/^[-*]\s+/.test(t)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+t.replace(/^[-*]\s+/,"")+"</li>"; }
+    else if(/^\d+[.、)]\s*/.test(t)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+t+"</li>"; }
+    else if(t===""){ if(inList){html+="</ul>";inList=false;} }
+    else { html+="<p>"+t+"</p>"; }
+  }
+  if(inList) html+="</ul>";
+  return html;
+}
+function normAns(s){ return String(s==null?"":s).trim().toLowerCase().replace(/\s+/g," "); }
+function isCorrect(user,ref){ var u=normAns(user), r=normAns(ref); if(!u) return false; if(u===r) return true; return u.indexOf(r)>=0 || r.indexOf(u)>=0; }
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+
+/* ============ 导航 ============ */
+var NAV = [{k:"home",t:"首页",ic:"🏠"}].concat(SUBJECTS.map(function(s){return {k:"sub:"+s.key,t:s.name,ic:s.icon};})).concat([{k:"quiz",t:"自测",ic:"✍️"},{k:"review",t:"周复盘",ic:"📊"},{k:"settings",t:"设置",ic:"⚙️"}]);
+var currentView="home", currentSubject="math", reviewWeek=0;
+var currentQuiz={questions:[], container:null};
+var quizSubject="math", quizPoint=null;
+var currentChapter=null, CHECKIN_GOAL=3;
+
+function renderNav(){
+  var h="";
+  NAV.forEach(function(n){
+    var active=false;
+    if(n.k==="home") active=currentView==="home";
+    else if(n.k==="quiz") active=currentView==="quiz";
+    else if(n.k==="review") active=currentView==="review";
+    else if(n.k==="settings") active=currentView==="settings";
+    else if(n.k.indexOf("sub:")===0) active=(currentView==="subject" && n.k==="sub:"+currentSubject);
+    h+='<button class="nav-item'+(active?" active":"")+'" data-nav="'+n.k+'"><span class="ic">'+n.ic+'</span>'+esc(n.t)+'</button>';
+  });
+  document.getElementById("nav").innerHTML=h;
+}
+function switchView(v){
+  currentView=v;
+  var views=document.querySelectorAll(".view");
+  for(var i=0;i<views.length;i++) views[i].classList.remove("on");
+  if(v==="home"){ document.getElementById("view-home").classList.add("on"); renderHome(); }
+  else if(v==="subject"){ document.getElementById("view-subject").classList.add("on"); renderSubject(); }
+  else if(v==="quiz"){ document.getElementById("view-quiz").classList.add("on"); renderQuiz(); }
+  else if(v==="review"){ document.getElementById("view-review").classList.add("on"); renderReview(); }
+  else if(v==="settings"){ document.getElementById("view-settings").classList.add("on"); renderSettings(); }
+  renderNav();
+  window.scrollTo(0,0);
+}
+
+/* ============ 首页 ============ */
+function renderHome(){
+  var el=document.getElementById("view-home");
+  var today=new Date(); var w=weekOf(today); var st=stageOfWeek(w); var days=daysToExam(today);
+  var key=fmt(today); var done=state.daily[key]||[]; var doneCount=0;
+  DAILY_TASKS.forEach(function(t,i){ if(done[i]) doneCount++; });
+  var html='<div class="grid grid-home">';
+  html+='<div class="card hero col-12"><div class="kicker">今天 · '+fmt(today)+'</div>';
+  if(w===0){ html+='<div class="big">'+Math.floor((START-today)/MS_DAY)+' 天后开始</div><div class="sub">规划自 2026-08-17 起，先备好作息与资料</div>'; }
+  else if(w===43){ html+='<div class="big">规划已结束</div><div class="sub">祝你取得理想成绩</div>'; }
+  else { html+='<div class="big">距高考 '+days+' 天</div><div class="sub">第 '+w+' 周 · 阶段 '+st+' '+STAGES[st].name+' · '+STAGES[st].goal+'</div>'; }
+  html+='<div class="stats">';
+  html+='<div class="stat"><div class="num">'+(w===0||w===43?"—":"W"+w)+'</div><div class="lbl">当前周</div></div>';
+  html+='<div class="stat"><div class="num">'+(st==null?"—":(st+"/6"))+'</div><div class="lbl">阶段进度</div></div>';
+  html+='<div class="stat"><div class="num">'+doneCount+'/'+DAILY_TASKS.length+'</div><div class="lbl">今日任务</div></div>';
+  html+='</div></div>';
+
+  var wd=today.getDay(); var plan=WEEKDAY_PLAN[wd];
+  html+='<div class="card col-6"><h2>今日安排</h2><div class="tbl-wrap"><table><tr><th>时间</th><th>学习块</th><th>科目</th></tr>';
+  DAILY_BLOCKS.forEach(function(b,i){
+    var subj="";
+    if(i===0) subj="词汇+古诗文"; else if(i===1) subj="数学"; else if(i===2) subj="语文/英语轮换";
+    else if(i===3) subj="主攻1："+plan.main1; else if(i===4) subj="主攻2："+plan.main2; else if(i===5) subj=plan.night;
+    else subj="当日闭环";
+    html+='<tr><td>'+b.time+'</td><td>'+esc(b.name)+'</td><td>'+esc(subj)+'</td></tr>';
+  });
+  html+='</table></div><p class="muted" style="margin-top:8px"><b>今天必须产出：</b>'+esc(plan.output)+'</p></div>';
+
+  html+='<div class="card col-6"><h2>今日任务打卡</h2><p class="lead">勾选即保存到本机。</p>';
+  DAILY_TASKS.forEach(function(t,i){ html+='<label class="chk'+(done[i]?" done":"")+'"><input type="checkbox" data-daily="'+i+'" '+(done[i]?"checked":"")+'>'+esc(t)+'</label>'; });
+  html+='</div>';
+
+  html+='<div class="card col-12"><h2>今日六科打卡</h2><p class="lead">点图标即打卡（自动记到该科当前章节）。</p><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">';
+  var todayLog = state.log[key]||{};
+  SUBJECTS.forEach(function(s){
+    var t=CHECKIN_TYPES[s.key][0];
+    var cur=currentChapterFor(s);
+    var cnt=(state.chapters[s.key]||{})[cur]||0;
+    var dd=todayLog[s.key]||{};
+    html+='<div class="card" style="margin:0;padding:14px;text-align:center"><div style="font-size:13px;color:var(--muted)">'+s.icon+' '+esc(s.name)+'</div><div style="font-size:11px;color:var(--muted);margin:4px 0">'+esc(cur)+' '+cnt+'/'+CHECKIN_GOAL+'</div><button class="btn'+(dd.done?"":" ghost")+'" data-home-checkin="'+s.key+'">'+t.icon+' '+esc(t.name)+'</button></div>';
+  });
+  html+='</div></div>';
+
+  html+='<div class="card col-12"><h2>42 周路线图</h2><p class="lead">当前周高亮；点某周看主线与周末验收。</p>';
+  STAGES.forEach(function(s){
+    var r=stageRange(s.no);
+    html+='<div class="stage'+(st===s.no?" cur":"")+'"><div style="min-width:110px"><b>阶段 '+s.no+'</b><div class="muted">'+s.weeks+' 周</div></div><div><div><b>'+s.name+'</b> <span class="badge indigo">第 '+r.startWeek+'—'+r.endWeek+' 周</span></div><div class="muted">'+fmt(r.start)+' — '+fmt(r.end)+' · '+s.goal+'</div></div></div>';
+  });
+  html+='<div class="weekgrid" style="margin-top:10px">';
+  for(var i=1;i<=42;i++){
+    var si=stageOfWeek(i), cls="wk s"+si;
+    if(i===w) cls+=" cur";
+    if(w>0 && w<=42 && i<w) cls+=" done";
+    var r2=weekRange(i);
+    html+='<div class="'+cls+'" data-wk="'+i+'"><div class="n">W'+i+'</div><div class="muted">'+pad(r2.start.getMonth()+1)+'/'+pad(r2.start.getDate())+'</div></div>';
+  }
+  html+='</div><div id="weekDetail" class="muted" style="margin-top:12px"></div></div>';
+  html+='</div>';
+  el.innerHTML=html;
+}
+function showWeekDetail(w){
+  var g=findGroup(w); var el=document.getElementById("weekDetail");
+  if(!g){ el.innerHTML=""; return; }
+  var r=weekRange(w); var si=stageOfWeek(w);
+  el.innerHTML='<b>第 '+w+' 周</b>（'+fmt(r.start)+' — '+fmt(r.end)+' · 阶段 '+si+' '+STAGES[si].name+'）<br>主线：'+esc(g.main)+'<br>周末验收：'+esc(g.check);
+}
+function toggleDaily(i, input){ var key=fmt(new Date()); var arr=state.daily[key]||(state.daily[key]=[]); arr[i]=!!input.checked; saveState(); if(input.parentElement) input.parentElement.classList.toggle("done", input.checked); }
+function currentChapterFor(s){
+  var ch=state.chapters[s.key]||{};
+  for(var i=0;i<s.chapters.length;i++){ if((ch[s.chapters[i]]||0)<CHECKIN_GOAL) return s.chapters[i]; }
+  return s.chapters[0];
+}
+function checkinHome(subjectKey){
+  var s=SUBJECTS.filter(function(x){return x.key===subjectKey;})[0]; if(!s) return;
+  var t=CHECKIN_TYPES[subjectKey][0];
+  var chName=currentChapterFor(s);
+  var ch=state.chapters[subjectKey]||(state.chapters[subjectKey]={}); ch[chName]=(ch[chName]||0)+1;
+  var key=fmt(new Date()); var log=state.log[key]||(state.log[key]={});
+  var sl=log[subjectKey]||(log[subjectKey]={done:true,entries:{}});
+  sl.done=true; sl.entries[t.key]=(sl.entries[t.key]||0)+t.step;
+  state.log[key]=log; saveState(); renderHome();
+  cloudCheckin(subjectKey, chName, t.key, t.step, ch[chName]);
+}
+
+/* ============ 学科页（手账） ============ */
+function getSubject(){ for(var i=0;i<SUBJECTS.length;i++){ if(SUBJECTS[i].key===currentSubject) return SUBJECTS[i]; } return SUBJECTS[0]; }
+function renderSubject(){
+  var el=document.getElementById("view-subject"); var s=getSubject();
+  var html='<div class="grid grid-home">';
+  html+='<div class="card col-12"><h2>'+s.icon+' '+esc(s.name)+' · 手账</h2><p class="lead">按手账记录复习：顺序、达标线、每周投入、章节进度。</p>';
+  html+='<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">';
+  html+='<div class="sticker blue"><b>📌 复习顺序</b>'+esc(s.order)+'</div>';
+  html+='<div class="sticker"><b>🎯 达标线</b>'+esc(s.standard)+'</div>';
+  html+='<div class="sticker pink"><b>⏱ 每周投入</b>'+esc(s.time)+'</div>';
+  html+='</div></div>';
+
+  var chMap=state.chapters[s.key]||{};
+  if(!currentChapter || s.chapters.indexOf(currentChapter)<0) currentChapter = currentChapterFor(s);
+  var doneN=0; s.chapters.forEach(function(c){ if((chMap[c]||0)>=CHECKIN_GOAL) doneN++; });
+  var pct=Math.round(doneN/s.chapters.length*100);
+  html+='<div class="card col-6"><h2>章节进度</h2><p class="lead">每章累计打卡 '+CHECKIN_GOAL+' 次自动完成，无需手动勾选。</p>';
+  html+='<div class="muted">完成 '+doneN+'/'+s.chapters.length+'</div><div class="bar"><i style="width:'+pct+'%"></i></div>';
+  s.chapters.forEach(function(c){
+    var cnt=chMap[c]||0, done=cnt>=CHECKIN_GOAL;
+    html+='<div class="chk'+(done?" done":"")+'"><span style="flex:1">'+(done?"✅ ":"")+esc(c)+'</span><span class="muted">'+cnt+'/'+CHECKIN_GOAL+'</span></div>';
+  });
+  html+='</div>';
+
+  var todayKey=fmt(new Date()); var tlog=(state.log[todayKey]||{})[s.key]||{};
+  var entries=tlog.entries||{};
+  html+='<div class="card col-6"><h2>今日打卡</h2><p class="lead">选章节，点图标即记录（可多次点累加）。</p>';
+  html+='<div class="field"><label>当前章节</label><div>';
+  s.chapters.forEach(function(c){
+    var done=(chMap[c]||0)>=CHECKIN_GOAL;
+    html+='<span class="pill'+(c===currentChapter?" on":"")+'" data-chapter-pill="'+esc(c)+'">'+(done?"✅ ":"")+esc(c)+'</span>';
+  });
+  html+='</div></div>';
+  html+='<div class="row">';
+  CHECKIN_TYPES[s.key].forEach(function(t){
+    var n=entries[t.key]||0;
+    html+='<button class="btn ghost" data-checkin="'+t.key+'" title="点一下 +'+t.step+t.unit+'">'+t.icon+' '+esc(t.name)+' <span class="badge indigo">'+n+t.unit+'</span></button>';
+  });
+  html+='</div>';
+  html+='<h3>最近打卡</h3>';
+  var dates=Object.keys(state.log).sort().reverse().slice(0,7);
+  var has=false;
+  dates.forEach(function(dt){
+    var dd=(state.log[dt]||{})[s.key]; if(!dd || !dd.done) return;
+    has=true;
+    var parts=[];
+    CHECKIN_TYPES[s.key].forEach(function(t){ var n=(dd.entries||{})[t.key]; if(n) parts.push(t.icon+esc(t.name)+' '+n+t.unit); });
+    html+='<div class="logline"><span class="d">'+dt+'</span><span class="badge green">已复习</span> <span>'+parts.join(' · ')+'</span></div>';
+  });
+  if(!has) html+='<div class="muted">还没有打卡记录。</div>';
+  html+='</div>';
+
+  var watched=state.watched[s.key]||{};
+  html+='<div class="card col-12"><h2>资源 · 系列</h2><p class="lead">点标题跳转 B 站观看；勾选标记已看；可粘贴链接新增。</p>';
+  (RESOURCES[s.key]||[]).forEach(function(series){
+    html+='<div class="series"><div class="series-head">'+esc(series.title)+(series.link?' <a class="btn ghost sm" href="'+esc(series.link)+'" target="_blank" rel="noopener">打开 ↗</a>':'')+'</div>';
+    if(series.videos.length){ series.videos.forEach(function(v){ html+=vidItemHtml(s.key,v.title,v.bvid,watched[v.bvid]); }); }
+    html+='</div>';
+  });
+  var customVids=state.custom[s.key]||[];
+  if(customVids.length){ html+='<div class="series"><div class="series-head">我的系列（手动添加）</div>'; customVids.forEach(function(v){ html+=vidItemHtml(s.key,v.title,v.bvid,watched[v.bvid]); }); html+='</div>'; }
+  html+='<button class="btn ghost" data-action="addVideo">+ 添加视频（粘贴 B 站链接）</button></div>';
+
+  html+='<div class="card col-12"><h2>AI 知识梳理</h2><p class="lead">选章节生成基础知识梳理（可选，需填 API Key；不是题目）。</p>';
+  html+='<div class="field"><select id="aiChapter">'; s.chapters.forEach(function(c,i){ html+='<option value="'+i+'">'+esc(c)+'</option>'; }); html+='</select></div>';
+  html+='<button class="btn ghost" data-action="ai">生成知识梳理</button>';
+  html+='<div id="aiOut" class="aiout" style="margin-top:12px">结果显示在这里（需先在「设置」填 API Key）。</div></div>';
+  html+='</div>';
+  el.innerHTML=html;
+}
+function vidItemHtml(subjKey, title, bvid, watched){
+  return '<div class="vid-item'+(watched?" watched":"")+'"><input type="checkbox" data-watch="'+esc(bvid)+'" '+(watched?"checked":"")+' title="标记已看"><a class="vtitle" href="https://www.bilibili.com/video/'+encodeURIComponent(bvid)+'/" target="_blank" rel="noopener">'+esc(title)+' ↗</a>'+(watched?'<span class="badge green">已看</span>':'')+'</div>';
+}
+function toggleWatched(bvid, checked){
+  var s=getSubject(); var w=state.watched[s.key]||(state.watched[s.key]={});
+  if(checked) w[bvid]=true; else delete w[bvid]; saveState();
+  var item=document.querySelector('.vid-item input[data-watch="'+bvid+'"]');
+  if(item && item.parentElement){
+    item.parentElement.classList.toggle("watched", checked);
+    var badge=item.parentElement.querySelector(".badge.green");
+    if(checked && !badge){ var b=document.createElement("span"); b.className="badge green"; b.textContent="已看"; item.parentElement.appendChild(b); }
+    if(!checked && badge) badge.remove();
+  }
+}
+function checkin(typeKey){
+  var s=getSubject();
+  var chName = currentChapter || currentChapterFor(s);
+  var t=CHECKIN_TYPES[s.key].filter(function(x){return x.key===typeKey;})[0]; if(!t) return;
+  var ch=state.chapters[s.key]||(state.chapters[s.key]={}); ch[chName]=(ch[chName]||0)+1;
+  var key=fmt(new Date()); var log=state.log[key]||(state.log[key]={});
+  var sl=log[s.key]||(log[s.key]={done:true,entries:{}});
+  sl.done=true; sl.entries[t.key]=(sl.entries[t.key]||0)+t.step;
+  state.log[key]=log; saveState(); renderSubject();
+  cloudCheckin(s.key, chName, t.key, t.step, ch[chName]);
+}
+function addVideo(){
+  var url=prompt("粘贴 B 站视频链接（自动识别 BV 号）：","");
+  if(!url) return;
+  var m=url.match(/BV[0-9A-Za-z]+/);
+  if(!m){ alert("没识别到 BV 号，请检查链接（需包含 BV…）。"); return; }
+  var title=prompt("给这个视频起个标题：","");
+  if(!title) title=m[0];
+  var arr=state.custom[currentSubject]||(state.custom[currentSubject]=[]);
+  arr.push({title:title, bvid:m[0]}); saveState(); renderSubject();
+}
+
+/* ============ 题目渲染 ============ */
+function typeBadge(t){ if(t==="choice") return '<span class="badge teal">选择</span>'; if(t==="fill") return '<span class="badge amber">填空</span>'; return '<span class="badge green">简答</span>'; }
+function renderQuestionsHTML(questions, containerId){
+  currentQuiz.questions=questions; currentQuiz.container=containerId;
+  var html='<div class="quiz-score muted" style="margin-bottom:12px"></div>';
+  questions.forEach(function(q,qi){
+    html+='<div class="qcard"><div class="qhead"><span class="badge indigo">第'+(qi+1)+'题</span> '+typeBadge(q.type)+' <button class="btn warn sm" data-flag="'+qi+'" style="margin-left:auto">此题有误</button></div>';
+    html+='<div class="qtext">'+esc(q.q)+'</div>';
+    if(q.type==="choice"){
+      (q.options||[]).forEach(function(o,oi){ html+='<label class="opt"><input type="radio" name="qz'+containerId+qi+'" value="'+oi+'">'+esc(o)+'</label>'; });
+    } else { html+='<input type="text" class="qinput" data-ans="'+qi+'" placeholder="写下你的答案">'; }
+    html+='<div class="qsrc">来源：'+esc(q.source||"真题/典型题")+'</div>';
+    html+='<div class="qresult" data-res="'+qi+'"></div></div>';
+  });
+  html+='<button class="btn" data-action="submitQuiz">提交并看答案</button>';
+  return html;
+}
+function submitQuiz(){
+  var qs=currentQuiz.questions||[]; var container=document.getElementById(currentQuiz.container);
+  if(!container) return;
+  var correct=0;
+  qs.forEach(function(q,qi){
+    var resEl=container.querySelector('[data-res="'+qi+'"]'); if(!resEl) return;
+    var user="";
+    if(q.type==="choice"){ var sel=container.querySelector('input[name="qz'+currentQuiz.container+qi+'"]:checked'); if(sel && q.options) user=q.options[parseInt(sel.value)]||""; }
+    else { var inp=container.querySelector('input[data-ans="'+qi+'"]'); if(inp) user=inp.value; }
+    var ok=isCorrect(user,q.answer); if(ok) correct++;
+    resEl.className="qresult "+(ok?"ok":"bad");
+    resEl.innerHTML=(ok?"✓ 正确":"✗ 参考答案："+esc(q.answer))+'<div class="explain">解析：'+esc(q.explain||"无")+'</div>';
+  });
+  var scoreEl=container.querySelector(".quiz-score");
+  if(scoreEl) scoreEl.innerHTML='<b>得分：'+correct+' / '+qs.length+'</b>（标准答案供参考，请对照解析自判）';
+}
+function flagQuestion(qi){
+  var q=currentQuiz.questions[qi]; if(!q) return;
+  if(state.flagged.indexOf(q.q)<0) state.flagged.push(q.q);
+  saveState();
+  var btn=document.querySelector('[data-flag="'+qi+'"]');
+  if(btn){ btn.textContent="已记录"; btn.disabled=true; }
+}
+
+/* ============ 自测（纯真题题库） ============ */
+function getBankQuestions(subjectKey, point, count){
+  var pool=(QUESTION_BANK[subjectKey]||[]).concat(state.importedBank[subjectKey]||[]);
+  pool=pool.filter(function(q){ return q && q.q && q.answer && state.flagged.indexOf(q.q)<0; });
+  var byPoint=pool.filter(function(q){ return q.point===point; });
+  var rest=pool.filter(function(q){ return q.point!==point; });
+  return shuffle(byPoint).concat(shuffle(rest)).slice(0,count);
+}
+function renderQuiz(){
+  var el=document.getElementById("view-quiz");
+  var html='<div class="card"><h2>✍️ 自测</h2><p class="lead">选科目 → 选知识点 → 生成自测题（来自预置真题库 + 你导入的题库，不含 AI 题）。</p>';
+  html+='<div class="field"><label>科目</label><div>'; SUBJECTS.forEach(function(s){ html+='<span class="pill'+(quizSubject===s.key?" on":"")+'" data-quiz-subj="'+s.key+'">'+s.icon+' '+esc(s.name)+'</span>'; }); html+='</div></div>';
+  html+='<div class="field"><label>知识点</label><div id="quizPoints"></div></div>';
+  html+='<div class="field"><label>题量</label><select id="quizCount"><option value="3">3 题</option><option value="5" selected>5 题</option><option value="10">10 题</option></select></div>';
+  html+='<button class="btn" data-action="genQuiz">生成自测题</button> <a class="btn ghost" href="#" data-action="goImport">导入题库</a>';
+  html+='<div id="quizOut" style="margin-top:14px"></div></div>';
+  el.innerHTML=html; renderQuizPoints();
+}
+function renderQuizPoints(){
+  var s=SUBJECTS.filter(function(x){return x.key===quizSubject;})[0]||SUBJECTS[0];
+  if(!quizPoint || s.chapters.indexOf(quizPoint)<0) quizPoint=s.chapters[0];
+  var el=document.getElementById("quizPoints"); if(!el) return;
+  var h=""; s.chapters.forEach(function(c){ h+='<span class="pill'+(c===quizPoint?" on":"")+'" data-quiz-point="'+esc(c)+'">'+esc(c)+'</span>'; });
+  el.innerHTML=h;
+}
+function generateQuiz(){
+  var out=document.getElementById("quizOut");
+  var s=SUBJECTS.filter(function(x){return x.key===quizSubject;})[0]||SUBJECTS[0];
+  var point=quizPoint||s.chapters[0];
+  var count=parseInt(document.getElementById("quizCount").value)||5;
+  var qs=getBankQuestions(s.key, point, count);
+  if(qs.length===0){ out.innerHTML='<div class="error">该知识点暂无题库题。可「导入题库」扩充，或换其他知识点。</div>'; return; }
+  out.innerHTML=renderQuestionsHTML(qs, "quizOut");
+}
+
+/* ============ 周复盘 ============ */
+function renderReview(){
+  var el=document.getElementById("view-review");
+  if(reviewWeek<1||reviewWeek>42){ var ww=weekOf(new Date()); reviewWeek=(ww<1||ww>42)?1:ww; }
+  var html='<div class="card"><h2>每周复盘 · 六个数字</h2><p class="lead">每周六晚记录，对比合格线。</p>';
+  html+='<div class="field"><label>选择周次</label><select id="reviewWeek">';
+  for(var i=1;i<=42;i++){ var rng=weekRange(i); html+='<option value="'+i+'"'+(i===reviewWeek?" selected":"")+'>W'+i+'（'+fmt(rng.start)+' — '+fmt(rng.end)+'）</option>'; }
+  html+='</select></div>';
+  var r=state.reviews[reviewWeek]||{};
+  WEEKLY_METRICS.forEach(function(m){ html+='<div class="field"><label>'+esc(m.name)+'（合格线：'+esc(m.pass)+'）</label><input type="text" data-metric="'+m.key+'" value="'+esc(r[m.key]||"")+'" placeholder="记录本周数值"></div>'; });
+  html+='<button class="btn" data-action="saveReview">保存本周复盘</button> <span id="reviewMsg" class="muted"></span></div>';
+  html+='<div class="card"><h2>历史复盘</h2><div class="tbl-wrap"><table><tr><th>周</th>'; METRIC_SHORT.forEach(function(m){ html+='<th>'+m+'</th>'; }); html+='</tr>';
+  var weeks=Object.keys(state.reviews).map(Number).sort(function(a,b){return b-a;});
+  if(weeks.length===0){ html+='<tr><td colspan="7" class="muted">暂无记录</td></tr>'; }
+  weeks.forEach(function(wn){ var rr=state.reviews[wn]||{}; html+='<tr><td>W'+wn+'</td>'; WEEKLY_METRICS.forEach(function(m){ html+='<td>'+esc(rr[m.key]||"—")+'</td>'; }); html+='</tr>'; });
+  html+='</table></div></div>';
+  el.innerHTML=html;
+}
+function saveReview(){
+  var wk=parseInt(document.getElementById("reviewWeek").value); var r=state.reviews[wk]||{};
+  WEEKLY_METRICS.forEach(function(m){ var inp=document.querySelector('input[data-metric="'+m.key+'"]'); var v=inp?inp.value.trim():""; if(v) r[m.key]=v; else delete r[m.key]; });
+  state.reviews[wk]=r; saveState(); document.getElementById("reviewMsg").textContent="已保存 W"+wk+" ✓";
+  if (cloudReady && supabase) { try { supabase.from("reviews").upsert({user_id: currentUser.uid, week: wk, data: r}, {onConflict: "user_id,week"}); } catch(e){} }
+}
+
+/* ============ 设置与备份 ============ */
+function renderSettings(){
+  var el=document.getElementById("view-settings"); var s=state.settings;
+  var html='<div class="card"><h2>AI 设置（仅知识梳理用）</h2><p class="lead">自测题已改为真题题库、不依赖 AI。此项仅用于「AI 知识梳理」，可不填。</p>';
+  html+='<div class="field"><label>服务商</label><select id="setProvider">'; Object.keys(PROVIDERS).forEach(function(p){ html+='<option value="'+p+'"'+(s.provider===p?" selected":"")+'>'+p+'</option>'; }); html+='</select></div>';
+  html+='<div class="field"><label>接口地址 Base URL</label><input id="setBaseUrl" value="'+esc(s.baseUrl)+'"></div>';
+  html+='<div class="field"><label>模型</label><input id="setModel" value="'+esc(s.model)+'"></div>';
+  html+='<div class="field"><label>API Key</label><input id="setKey" type="password" value="'+esc(s.apiKey)+'" placeholder="sk-..."></div>';
+  html+='<button class="btn" data-action="saveSettings">保存设置</button> <span id="setMsg" class="muted"></span>';
+  if(!storageOK) html+='<div class="error">当前浏览器无法使用本地存储，进度可能无法保存。</div></div>';
+  html+='<div class="card"><h2>题库导入</h2><p class="lead">导入 JSON 题库文件扩充自测。格式：{科目key:[{point,type,q,options,answer,explain,source}]}，科目 key 为 chinese/math/english/physics/chemistry/biology。</p>';
+  html+='<button class="btn" data-action="importBank">导入题库 JSON</button> <input type="file" id="bankFile" accept="application/json" style="display:none"><span id="bankMsg" class="muted"></span></div>';
+  html+='<div class="card"><h2>数据备份</h2><p class="lead">导出全部进度（含打卡、章节、题库）为 JSON。</p>';
+  html+='<button class="btn" data-action="export">导出数据</button> <button class="btn ghost" data-action="import">导入数据</button> <input type="file" id="importFile" accept="application/json" style="display:none"></div>';
+  el.innerHTML=html;
+}
+function saveSettings(){
+  state.settings.provider=document.getElementById("setProvider").value;
+  state.settings.baseUrl=document.getElementById("setBaseUrl").value.trim();
+  state.settings.model=document.getElementById("setModel").value.trim();
+  state.settings.apiKey=document.getElementById("setKey").value.trim();
+  saveState(); document.getElementById("setMsg").textContent="已保存 ✓";
+}
+function exportData(){
+  var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="高考自学数据备份_"+fmt(new Date())+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function importData(file){
+  var fr=new FileReader();
+  fr.onload=function(){
+    try{ var obj=JSON.parse(fr.result);
+      state={ settings:Object.assign(memStore().settings,obj.settings||{}), daily:obj.daily||{}, reviews:obj.reviews||{}, watched:obj.watched||{}, custom:obj.custom||{}, flagged:obj.flagged||[], chapters:obj.chapters||{}, log:obj.log||{}, importedBank:obj.importedBank||{} };
+      saveState(); switchView(currentView); alert("导入成功");
+    }catch(e){ alert("导入失败：文件格式不对。\n"+e.message); }
+  };
+  fr.readAsText(file);
+}
+function importBank(file){
+  var fr=new FileReader();
+  fr.onload=function(){
+    try{
+      var obj=JSON.parse(fr.result);
+      var bank=(obj && obj.bank)?obj.bank:obj;
+      var count=0;
+      Object.keys(bank).forEach(function(k){
+        var arr=bank[k]; if(!Array.isArray(arr)) return;
+        arr.forEach(function(q){
+          if(!q || !q.q || !q.answer) return;
+          if(!q.type) q.type=(q.options && q.options.length)?"choice":"fill";
+          if(!q.source) q.source="导入";
+          (state.importedBank[k]=state.importedBank[k]||[]).push(q); count++;
+        });
+      });
+      saveState();
+      var el=document.getElementById("bankMsg"); if(el) el.textContent="已导入 "+count+" 题 ✓";
+    }catch(e){ alert("导入失败：JSON 格式不对。\n"+e.message); }
+  };
+  fr.readAsText(file);
+}
+
+/* ============ AI（知识梳理） ============ */
+async function callAI(prompt){
+  var s=state.settings;
+  try{
+    var resp=await fetch(s.baseUrl.replace(/\/$/,"")+"/chat/completions",{ method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+s.apiKey}, body:JSON.stringify({model:s.model, messages:[{role:"system",content:"你是严谨、简明的高考复习助教，用中文结构化输出。"},{role:"user",content:prompt}], temperature:0.3, max_tokens:2000, stream:false}) });
+    if(!resp.ok){ var t=await resp.text(); return {ok:false, err:"请求失败 "+resp.status+"："+t.slice(0,300)}; }
+    var data=await resp.json();
+    var txt=(data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content)||"(空)";
+    return {ok:true, text:txt};
+  }catch(e){ return {ok:false, err:"请求异常（可能浏览器跨域拦截 CORS）："+e.message}; }
+}
+async function generateAI(){
+  var out=document.getElementById("aiOut"); var s=getSubject();
+  var sel=document.getElementById("aiChapter"); var idx=sel?parseInt(sel.value):0;
+  var chapter=s.chapters[idx]||s.chapters[0];
+  if(!state.settings.apiKey){ out.innerHTML='<div class="error">尚未填写 API Key。请到「设置」填写后再试（此功能可选）。</div>'; return; }
+  out.innerHTML='<span class="spin">正在生成「'+esc(chapter)+'」的知识梳理，请稍候…</span>';
+  var prompt="你是高考复习助教。请针对【"+s.name+"】的章节「"+chapter+"」做一份基础知识梳理：\n1) 核心概念；2) 重点公式/术语；3) 常见题型与思路；4) 易错点；5) 一周复习建议。用简洁中文 markdown。";
+  var r=await callAI(prompt);
+  if(r.ok){ out.innerHTML=mdToHtml(r.text); } else { out.innerHTML='<div class="error">'+esc(r.err)+'</div>'; }
+}
+
+/* ============ 全局事件 ============ */
+document.addEventListener("click", function(ev){
+  var t=ev.target;
+  var navBtn=t.closest?t.closest("button[data-nav]"):null;
+  if(navBtn){ var k=navBtn.getAttribute("data-nav"); if(k.indexOf("sub:")===0){ currentSubject=k.slice(4); switchView("subject"); } else switchView(k); return; }
+  var wk=t.closest?t.closest("[data-wk]"):null;
+  if(wk){ showWeekDetail(parseInt(wk.getAttribute("data-wk"))); return; }
+  var cp=t.closest?t.closest("[data-chapter-pill]"):null;
+  if(cp){ currentChapter=cp.getAttribute("data-chapter-pill"); renderSubject(); return; }
+  var ci=t.closest?t.closest("[data-checkin]"):null;
+  if(ci){ checkin(ci.getAttribute("data-checkin")); return; }
+  var hc=t.closest?t.closest("[data-home-checkin]"):null;
+  if(hc){ checkinHome(hc.getAttribute("data-home-checkin")); return; }
+  var flag=t.closest?t.closest("[data-flag]"):null;
+  if(flag){ flagQuestion(parseInt(flag.getAttribute("data-flag"))); return; }
+  var subj=t.closest?t.closest("[data-quiz-subj]"):null;
+  if(subj){ quizSubject=subj.getAttribute("data-quiz-subj"); quizPoint=null; renderQuizPoints(); var o=document.getElementById("quizOut"); if(o) o.innerHTML=""; return; }
+  var pt=t.closest?t.closest("[data-quiz-point]"):null;
+  if(pt){ quizPoint=pt.getAttribute("data-quiz-point"); renderQuizPoints(); var o2=document.getElementById("quizOut"); if(o2) o2.innerHTML=""; return; }
+  var act=t.closest?t.closest("[data-action]"):null;
+  if(act){
+    var a=act.getAttribute("data-action");
+    if(a==="ai") generateAI();
+    else if(a==="addVideo") addVideo();
+    else if(a==="submitQuiz") submitQuiz();
+    else if(a==="genQuiz") generateQuiz();
+    else if(a==="goImport"){ switchView("settings"); var bf=document.getElementById("bankFile"); if(bf) bf.focus(); }
+    else if(a==="saveSettings") saveSettings();
+    else if(a==="saveReview") saveReview();
+    else if(a==="export") exportData();
+    else if(a==="import"){ var f=document.getElementById("importFile"); if(f) f.click(); }
+    else if(a==="importBank"){ var bf2=document.getElementById("bankFile"); if(bf2) bf2.click(); }
+    return;
+  }
+});
+document.addEventListener("change", function(ev){
+  var t=ev.target;
+  var d=t.closest?t.closest("input[data-daily]"):null;
+  if(d){ toggleDaily(parseInt(d.getAttribute("data-daily")), d); return; }
+  var w=t.closest?t.closest("input[data-watch]"):null;
+  if(w){ toggleWatched(w.getAttribute("data-watch"), w.checked); return; }
+  if(t.id==="reviewWeek"){ reviewWeek=parseInt(t.value); renderReview(); return; }
+  if(t.id==="setProvider"){ var p=PROVIDERS[t.value]; if(p){ document.getElementById("setBaseUrl").value=p.baseUrl; document.getElementById("setModel").value=p.model; } return; }
+  if(t.id==="importFile"){ if(t.files&&t.files[0]) importData(t.files[0]); return; }
+  if(t.id==="bankFile"){ if(t.files&&t.files[0]) importBank(t.files[0]); return; }
+});
+
+/* ============ 启动 ============ */
+initFlow();
+</script>
+</body>
+</html>
