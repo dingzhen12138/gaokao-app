@@ -1,0 +1,8 @@
+{
+  "appId": "com.gaokao.study",
+  "appName": "高考自学手账",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
